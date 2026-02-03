@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Magnolia Scout</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png">
+
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Magnolia Scout","short_name":"Magnolia","icons":[{"src":"https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png","sizes":"192x192","type":"image/png","purpose":"any maskable"}],"start_url":".","display":"standalone","background_color":"#000a1a","theme_color":"#002d5d"}'>
+
+    <style>
+        :root { --bg: #000a1a; --magnolia: #002d5d; --magnolia-light: #004b99; --red-mag: #e30613; --text: #ffffff; --warn: #ffcc00; }
+        body { font-family: 'Arial Black', sans-serif; background-color: var(--bg); background-image: url('https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png'); background-repeat: no-repeat; background-position: center center; background-attachment: fixed; background-size: 80%; color: var(--text); padding: 5px; margin: 0; overflow-x: hidden; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 10, 26, 0.88); z-index: -1; }
+        #setup-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        .setup-card { background: #001530; padding: 20px; border-radius: 15px; border: 2px solid var(--magnolia); margin-bottom: 20px; }
+        .setup-title { color: var(--text); margin: 0 0 15px 0; font-size: 1rem; text-transform: uppercase; border-left: 4px solid var(--red-mag); padding-left: 10px; }
+        .setup-input { width: 100%; background: #000; border: 1px solid var(--magnolia); color: white; padding: 12px; border-radius: 8px; font-size: 1rem; box-sizing: border-box; margin-bottom: 10px; }
+        .loc-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
+        .loc-btn { flex: 1; padding: 10px; background: #001f44; border: 1px solid var(--magnolia); color: #888; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+        .loc-btn.active { border-color: var(--red-mag); color: white; background: var(--magnolia); }
+        .btn-start { background: var(--red-mag); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; width: 100%; margin-bottom: 30px; }
+        .dashboard { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-bottom: 15px; position: relative; z-index: 1; }
+        .bonus-box { background: rgba(0, 21, 48, 0.8); border-radius: 8px; text-align: center; padding: 8px; border: 2px solid var(--magnolia); flex: 1; height: 65px; display: flex; flex-direction: column; justify-content: center; }
+        .bonus-box b { font-size: 2.2rem; display: block; line-height: 1; color: var(--text); }
+        .bonus-box span { font-size: 0.55rem; text-transform: uppercase; color: #aaa; display: block; }
+        .is-bonus { background: var(--red-mag) !important; border-color: white; }
+        .actions { display: flex; gap: 5px; flex-shrink: 0; }
+        .btn-ctrl { background: var(--magnolia); border: 1px solid var(--magnolia-light); color: white; border-radius: 8px; font-size: 1.2rem; width: 50px; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .court { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; position: relative; z-index: 1; }
+        .col-label { text-align: center; font-size: 0.7rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
+        .p-card { display: flex; background: rgba(0, 21, 48, 0.7); backdrop-filter: blur(1px); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--magnolia); height: 75px; position: relative; }
+        .p-data { flex-grow: 1; display: flex; align-items: center; justify-content: space-around; padding: 0 5px; }
+        .p-info { display: flex; flex-direction: column; align-items: center; }
+        .p-name-label { font-size: 0.5rem; color: #ccc; text-transform: uppercase; margin-bottom: -4px; }
+        .p-num { font-size: 2.2rem; color: var(--text); font-weight: 900; }
+        .opp .p-num { color: #888; }
+        .p-fouls { font-size: 2.8rem; font-weight: 900; color: var(--red-mag); }
+        .p-btns { display: flex; flex-direction: column; width: 45px; gap: 2px; }
+        .btn-p { border: none; color: white; font-weight: bold; font-size: 1.5rem; flex: 1; display: flex; align-items: center; justify-content: center; }
+        .btn-plus { background: var(--magnolia); }
+        .opp .btn-plus { background: #333; }
+        .btn-min { background: rgba(0, 12, 26, 0.6); font-size: 1rem; color: #555; }
+        .warning .p-fouls { color: var(--warn); }
+        .warning { border: 2px solid var(--warn); }
+        .out { background: var(--red-mag) !important; }
+        .out .p-fouls { color: white; }
+        .rev-layout .dash-my { order: 3; }
+        .rev-layout .dash-opp { order: 1; }
+        .rev-layout .actions { order: 2; }
+        .rev-layout .court-my { order: 2; }
+        .rev-layout .court-opp { order: 1; }
+        .switch { position: relative; width: 34px; height: 20px; margin-right: 10px; display: inline-block; vertical-align: middle; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--red-mag); }
+        input:checked + .slider:before { transform: translateX(14px); }
+        .setup-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #002550; gap: 5px; }
+        .edit-in { background: #000; border: 1px solid var(--magnolia); color: #fff; padding: 4px; font-size: 0.8rem; border-radius: 4px; }
+        .n-in { width: 35px; text-align: center; font-weight: bold; color: var(--text); }
+        .nm-in { flex: 1; }
+        .btn-add-setup { background: #001530; color: #4CAF50; border: 1px dashed #4CAF50; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; }
+        .btn-del-setup { background: var(--red-mag); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+    <div id="setup-overlay">
+        <div class="setup-card">
+            <h3 class="setup-title">SQUADRA AVVERSARIA</h3>
+            <input type="text" id="opp-name-input" class="setup-input" placeholder="Nome squadra..." oninput="updateOppName(this.value)">
+            <h3 class="setup-title">LOCATION</h3>
+            <div class="loc-toggle">
+                <button id="btn-casa" class="loc-btn active" onclick="setLoc('casa')">CASA (MAG SX)</button>
+                <button id="btn-fuori" class="loc-btn" onclick="setLoc('fuori')">FUORI (MAG DX)</button>
+            </div>
+        </div>
+        <div class="setup-card">
+            <h3 class="setup-title">ROSTER MAGNOLIA</h3>
+            <div id="setup-list-my"></div>
+            <button class="btn-add-setup" onclick="addP('my')">+ AGGIUNGI TESSERATA</button>
+        </div>
+        <div class="setup-card">
+            <h3 class="setup-title">ROSTER AVVERSARI</h3>
+            <div id="setup-list-opp"></div>
+            <button class="btn-add-setup" onclick="addP('opp')">+ AGGIUNGI NUMERO</button>
+        </div>
+        <button class="btn-start" onclick="closeSetup()">INIZIA PARTITA</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="bonus-box dash-my" id="box-my"><span>MAGNOLIA</span><b id="tot-my">0</b></div>
+        <div class="actions">
+            <button class="btn-ctrl" onclick="nextQ()">⏱️</button>
+            <button class="btn-ctrl" onclick="openSetup()">⚙️</button>
+        </div>
+        <div class="bonus-box dash-opp" id="box-opp"><span id="opp-label">AVVERSARI</span><b id="tot-opp">0</b></div>
+    </div>
+
+    <div class="court">
+        <div class="court-my"><div class="col-label" id="label-my">MAGNOLIA</div><div id="grid-my"></div></div>
+        <div class="court-opp"><div class="col-label" id="label-opp">AVVERSARI</div><div id="grid-opp"></div></div>
+    </div>
+
+    <script>
+        let myT = JSON.parse(localStorage.getItem('M_T_GIST')) || [{id:1, n:"4", nm:"PLAYER 1", on:true}];
+        let opT = JSON.parse(localStorage.getItem('O_T_GIST')) || [{id:101, n:"4", on:true}];
+        let f = {}; let bM = 0, bO = 0; let currentOppName = "AVVERSARI";
+
+        function setLoc(loc) {
+            const isHome = (loc === 'casa');
+            document.getElementById('btn-casa').classList.toggle('active', isHome);
+            document.getElementById('btn-fuori').classList.toggle('active', !isHome);
+            document.body.classList.toggle('rev-layout', !isHome);
+        }
+        function openSetup() { document.getElementById('setup-overlay').style.display = 'flex'; drawSetupList(); }
+        function closeSetup() { document.getElementById('setup-overlay').style.display = 'none'; render(); }
+        function drawSetupList() {
+            const drawType = (target, list, type) => {
+                const el = document.getElementById(target); el.innerHTML = '';
+                list.forEach(p => {
+                    const row = document.createElement('div');
+                    row.className = 'setup-row';
+                    row.innerHTML = `<label class="switch"><input type="checkbox" ${p.on?'checked':''} onchange="updP(${p.id},'on',this.checked,'${type}')"><span class="slider"></span></label>
+                        <input type="text" class="edit-in n-in" value="${p.n}" onchange="updP(${p.id},'n',this.value,'${type}')">
+                        ${type==='my' ? `<input type="text" class="edit-in nm-in" value="${p.nm||''}" placeholder="Nome" onchange="updP(${p.id},'nm',this.value,'my')">` : ''}
+                        <button class="btn-del-setup" onclick="remP(${p.id},'${type}')">X</button>`;
+                    el.appendChild(row);
+                });
+            };
+            drawType('setup-list-my', myT, 'my');
+            drawType('setup-list-opp', opT, 'opp');
+        }
+        function addP(type) {
+            const newId = Date.now();
+            if(type === 'my') myT.push({id: newId, n: "0", nm: "NUOVA", on: true});
+            else opT.push({id: newId, n: "0", on: true});
+            drawSetupList();
+        }
+        function remP(id, type) { if(!confirm("Eliminare?")) return; if(type === 'my') myT = myT.filter(p => p.id !== id); else opT = opT.filter(p => p.id !== id); drawSetupList(); }
+        function updP(id, field, val, type) {
+            const list = type === 'my' ? myT : opT;
+            const p = list.find(x => x.id === id); if(p) p[field] = val;
+            localStorage.setItem('M_T_GIST', JSON.stringify(myT));
+            localStorage.setItem('O_T_GIST', JSON.stringify(opT));
+        }
+        function updateOppName(val) { currentOppName = val || "AVVERSARI"; document.getElementById('opp-label').innerText = currentOppName; document.getElementById('label-opp').innerText = currentOppName; }
+        function render() {
+            const drawGrid = (gid, list, type) => {
+                const c = document.getElementById(gid); c.innerHTML = '';
+                list.forEach(p => {
+                    if(!p.on) return;
+                    if(f[p.id] === undefined) f[p.id] = 0;
+                    const div = document.createElement('div');
+                    div.className = `p-card ${type==='opp'?'opp':''}`; div.id = `pc-${p.id}`;
+                    div.innerHTML = `<div class="p-data" onclick="change(${p.id},1,'${type}')"><div class="p-info"><span class="p-name-label">${p.nm || ''}</span><span class="p-num">${p.n}</span></div><span class="p-fouls" id="f-${p.id}">${f[p.id]}</span></div>
+                        <div class="p-btns"><button class="btn-p btn-plus" onclick="change(${p.id},1,'${type}')">+</button><button class="btn-p btn-min" onclick="change(${p.id},-1,'${type}')">-</button></div>`;
+                    c.appendChild(div); upCard(p.id);
+                });
+            };
+            drawGrid('grid-my', myT, 'my'); drawGrid('grid-opp', opT, 'opp'); upTop();
+        }
+        function change(id, d, type) {
+            let o = f[id] || 0; f[id] = Math.min(Math.max(o+d,0),5);
+            if(d>0 && o<5){ if(type==='my') bM++; else bO++; }
+            else if(d<0 && o>0){ if(type==='my') bM--; else bO--; }
+            if(d>0 && window.navigator.vibrate) window.navigator.vibrate(40);
+            upCard(id); upTop();
+        }
+        function upCard(id) {
+            const val = f[id] || 0; const r = document.getElementById(`pc-${id}`); if(!r) return;
+            document.getElementById(`f-${id}`).innerText = val;
+            r.classList.toggle('warning', val===4); r.classList.toggle('out', val===5);
+        }
+        function upTop() {
+            document.getElementById('tot-my').innerText = bM; document.getElementById('tot-opp').innerText = bO;
+            document.getElementById('box-my').classList.toggle('is-bonus', bM>=4); document.getElementById('box-opp').classList.toggle('is-bonus', bO>=4);
+        }
+        function nextQ() { if(confirm("Nuovo Quarto?")) { bM=0; bO=0; upTop(); } }
+        openSetup();
+    </script>
+</body>
+</html>
