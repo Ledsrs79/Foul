@@ -3,296 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magnolia Scout - Voice Fix</title>
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="icon" type="image/png" sizes="192x192" href="https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-
+    <title>Magnolia Scout - Feedback</title>
     <style>
-        :root { --bg: #000a1a; --magnolia: #002d5d; --magnolia-light: #004b99; --red-mag: #e30613; --text: #ffffff; --warn: #ffcc00; }
-        body { font-family: 'Arial Black', sans-serif; background-color: var(--bg); background-image: url('https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png'); background-repeat: no-repeat; background-position: center center; background-attachment: fixed; background-size: 80%; color: var(--text); padding: 5px; margin: 0; overflow-x: hidden; }
+        :root { --bg: #000a1a; --magnolia: #002d5d; --red-mag: #e30613; --text: #ffffff; --warn: #ffcc00; }
+        body { font-family: 'Arial Black', sans-serif; background-color: var(--bg); background-image: url('https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png'); background-repeat: no-repeat; background-position: center center; background-attachment: fixed; background-size: 80%; color: var(--text); padding: 5px; margin: 0; }
         body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 10, 26, 0.88); z-index: -1; }
+        
+        /* Notifica Vocale */
+        #voice-status { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 1px solid var(--red-mag); padding: 5px 15px; border-radius: 20px; z-index: 2000; font-size: 0.8rem; display: none; color: var(--warn); }
+
         #setup-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
-        .setup-card { background: #001530; padding: 20px; border-radius: 15px; border: 2px solid var(--magnolia); margin-bottom: 20px; }
-        .setup-title { color: var(--text); margin: 0 0 15px 0; font-size: 1rem; text-transform: uppercase; border-left: 4px solid var(--red-mag); padding-left: 10px; }
-        .setup-input { width: 100%; background: #000; border: 1px solid var(--magnolia); color: white; padding: 12px; border-radius: 8px; font-size: 1rem; box-sizing: border-box; margin-bottom: 10px; }
-        .loc-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
-        .loc-btn { flex: 1; padding: 10px; background: #001f44; border: 1px solid var(--magnolia); color: #888; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
-        .loc-btn.active { border-color: var(--red-mag); color: white; background: var(--magnolia); }
-        .btn-start { background: var(--red-mag); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; width: 100%; margin-bottom: 15px; }
-        .btn-reset-total { background: #444; color: #ff4444; border: 1px solid #ff4444; padding: 10px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; width: 100%; margin-bottom: 30px; cursor: pointer; }
-        .dashboard { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-bottom: 15px; position: relative; z-index: 1; }
-        .bonus-box { background: rgba(0, 21, 48, 0.8); border-radius: 8px; text-align: center; padding: 8px; border: 2px solid var(--magnolia); flex: 1; height: 65px; display: flex; flex-direction: column; justify-content: center; }
-        .bonus-box b { font-size: 2.2rem; display: block; line-height: 1; color: var(--text); }
-        .bonus-box span { font-size: 0.55rem; text-transform: uppercase; color: #aaa; display: block; }
-        .is-bonus { background: var(--red-mag) !important; border-color: white; }
-        .actions { display: flex; gap: 5px; flex-shrink: 0; }
-        .btn-ctrl { background: var(--magnolia); border: 1px solid var(--magnolia-light); color: white; border-radius: 8px; font-size: 1.2rem; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
-        .btn-voice { background: #28a745; border-color: #1e7e34; transition: all 0.3s; }
-        .btn-voice.listening { background: var(--red-mag); box-shadow: 0 0 15px var(--red-mag); transform: scale(1.1); }
-        .court { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; position: relative; z-index: 1; }
-        .col-label { text-align: center; font-size: 0.7rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
-        .p-card { display: flex; background: rgba(0, 21, 48, 0.7); backdrop-filter: blur(1px); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--magnolia); height: 75px; }
-        .p-data { flex-grow: 1; display: flex; align-items: center; justify-content: space-around; padding: 0 5px; }
-        .p-info { display: flex; flex-direction: column; align-items: center; }
-        .p-name-label { font-size: 0.5rem; color: #ccc; text-transform: uppercase; margin-bottom: -4px; }
-        .p-num { font-size: 2.2rem; color: var(--text); font-weight: 900; }
-        .opp .p-num { color: #888; }
-        .p-fouls { font-size: 2.8rem; font-weight: 900; color: var(--red-mag); }
-        .p-btns { display: flex; flex-direction: column; width: 45px; gap: 2px; }
-        .btn-p { border: none; color: white; font-weight: bold; font-size: 1.5rem; flex: 1; display: flex; align-items: center; justify-content: center; }
-        .btn-plus { background: var(--magnolia); }
-        .opp .btn-plus { background: #333; }
-        .btn-min { background: rgba(0, 12, 26, 0.6); font-size: 1rem; color: #555; }
-        .warning .p-fouls { color: var(--warn); }
+        .setup-card { background: #001530; padding: 15px; border-radius: 15px; border: 2px solid var(--magnolia); margin-bottom: 15px; }
+        .setup-title { color: var(--text); margin: 0 0 10px 0; font-size: 0.9rem; text-transform: uppercase; border-left: 4px solid var(--red-mag); padding-left: 10px; }
+        .dashboard { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-bottom: 10px; }
+        .bonus-box { background: rgba(0, 21, 48, 0.8); border-radius: 8px; text-align: center; padding: 8px; border: 2px solid var(--magnolia); flex: 1; height: 60px; }
+        .bonus-box b { font-size: 2rem; display: block; line-height: 1; }
+        .bonus-box span { font-size: 0.5rem; text-transform: uppercase; color: #aaa; }
+        .is-bonus { background: var(--red-mag) !important; }
+        .actions { display: flex; gap: 5px; }
+        .btn-ctrl { background: var(--magnolia); border: none; color: white; border-radius: 8px; width: 45px; height: 45px; font-size: 1.2rem; }
+        .btn-voice { background: #28a745; }
+        .btn-voice.listening { background: var(--red-mag); animation: pulse 0.6s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .court { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .p-card { display: flex; background: rgba(0, 21, 48, 0.7); border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--magnolia); height: 70px; }
+        .p-data { flex-grow: 1; display: flex; align-items: center; justify-content: space-around; }
+        .p-num { font-size: 2rem; font-weight: 900; }
+        .p-fouls { font-size: 2.5rem; font-weight: 900; color: var(--red-mag); }
         .warning { border: 2px solid var(--warn); }
-        .out { background: var(--red-mag) !important; }
-        .out .p-fouls { color: white; }
-        .switch { position: relative; width: 34px; height: 20px; margin-right: 10px; display: inline-block; vertical-align: middle; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--red-mag); }
-        input:checked + .slider:before { transform: translateX(14px); }
-        .setup-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #002550; gap: 5px; }
-        .edit-in { background: #000; border: 1px solid var(--magnolia); color: #fff; padding: 4px; font-size: 0.8rem; border-radius: 4px; }
-        .n-in { width: 35px; text-align: center; font-weight: bold; color: var(--text); }
-        .nm-in { flex: 1; }
-        .btn-add-setup { background: #001530; color: #4CAF50; border: 1px dashed #4CAF50; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; }
+        .warning .p-fouls { color: var(--warn); }
+        .out { background: var(--red-mag) !important; opacity: 0.8; }
+        .btn-p { border: none; color: white; width: 40px; font-weight: bold; font-size: 1.2rem; }
+        .btn-plus { background: var(--magnolia); height: 100%; flex: 1; }
+        .btn-min { background: rgba(0,0,0,0.3); height: 100%; flex: 1; font-size: 0.8rem; color: #777; }
+        .p-btns { display: flex; flex-direction: column; width: 40px; }
+        .setup-row { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+        input[type="text"] { background: #000; border: 1px solid var(--magnolia); color: #fff; padding: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
+    <div id="voice-status"></div>
+
     <div id="setup-overlay">
         <div class="setup-card">
-            <h3 class="setup-title">SQUADRA AVVERSARIA</h3>
-            <input type="text" id="opp-name-input" class="setup-input" placeholder="Nome squadra..." oninput="updateOppName(this.value)">
-            <h3 class="setup-title">LOCATION</h3>
-            <div class="loc-toggle">
-                <button id="btn-casa" class="loc-btn active" onclick="setLoc('casa')">CASA</button>
-                <button id="btn-fuori" class="loc-btn" onclick="setLoc('fuori')">FUORI</button>
-            </div>
+            <h3 class="setup-title">AVVERSARI</h3>
+            <input type="text" id="opp-name-input" placeholder="Nome squadra..." oninput="oppN=this.value;save()">
         </div>
         <div class="setup-card">
-            <h3 class="setup-title">ROSTER MAGNOLIA</h3>
+            <h3 class="setup-title">MAGNOLIA</h3>
             <div id="setup-list-my"></div>
-            <button class="btn-add-setup" onclick="addP('my')">+ AGGIUNGI TESSERATA</button>
+            <button onclick="addP('my')" style="width:100%; background:none; color:#4CAF50; border:1px dashed #4CAF50; padding:10px; margin-top:5px;">+ AGGIUNGI</button>
         </div>
         <div class="setup-card">
-            <h3 class="setup-title">ROSTER AVVERSARI</h3>
+            <h3 class="setup-title">AVVERSARI</h3>
             <div id="setup-list-opp"></div>
-            <button class="btn-add-setup" onclick="addP('opp')">+ AGGIUNGI NUMERO</button>
+            <button onclick="addP('opp')" style="width:100%; background:none; color:#4CAF50; border:1px dashed #4CAF50; padding:10px; margin-top:5px;">+ AGGIUNGI</button>
         </div>
-        <button class="btn-start" onclick="closeSetup()">TORNA AL CAMPO</button>
-        <button class="btn-reset-total" onclick="fullReset()">⚠️ NUOVA PARTITA (RESET FALLI)</button>
+        <button onclick="closeSetup()" style="background:var(--red-mag); color:white; padding:15px; border:none; border-radius:10px; font-weight:bold;">VAI AL CAMPO</button>
+        <button onclick="fullReset()" style="background:#444; color:red; border:none; padding:10px; margin-top:20px; border-radius:10px;">RESET FALLI</button>
     </div>
 
     <div class="dashboard">
-        <div class="bonus-box dash-my" id="box-my"><span>MAGNOLIA</span><b id="tot-my">0</b></div>
+        <div class="bonus-box" id="box-my"><span>MAGNOLIA</span><b id="tot-my">0</b></div>
         <div class="actions">
             <button class="btn-ctrl" onclick="nextQ()">⏱️</button>
             <button id="voice-btn" class="btn-ctrl btn-voice" onclick="toggleVoice()">🎤</button>
             <button class="btn-ctrl" onclick="openSetup()">⚙️</button>
         </div>
-        <div class="bonus-box dash-opp" id="box-opp"><span id="opp-label">AVVERSARI</span><b id="tot-opp">0</b></div>
+        <div class="bonus-box" id="box-opp"><span id="opp-label">AVVERSARI</span><b id="tot-opp">0</b></div>
     </div>
 
     <div class="court">
-        <div class="court-my"><div class="col-label" id="label-my">MAGNOLIA</div><div id="grid-my"></div></div>
-        <div class="court-opp"><div class="col-label" id="label-opp">AVVERSARI</div><div id="grid-opp"></div></div>
+        <div id="grid-my"></div>
+        <div id="grid-opp"></div>
     </div>
 
     <script>
-        let myT = JSON.parse(localStorage.getItem('M_T_PERMANENT')) || [{id:1, n:"4", nm:"PLAYER 1", on:true}];
-        let opT = JSON.parse(localStorage.getItem('O_T_GIST')) || [{id:101, n:"4", on:true}];
-        let f = JSON.parse(localStorage.getItem('F_DATA_GIST')) || {}; 
-        let bM = parseInt(localStorage.getItem('BM_GIST')) || 0; 
-        let bO = parseInt(localStorage.getItem('BO_GIST')) || 0;
-        let currentOppName = localStorage.getItem('OPP_NAME_GIST') || "AVVERSARI";
+        let myT = JSON.parse(localStorage.getItem('M_ROSTER')) || [{id:1, n:"4", nm:"PLAY", on:true}];
+        let opT = JSON.parse(localStorage.getItem('O_ROSTER')) || [{id:101, n:"4", on:true}];
+        let f = JSON.parse(localStorage.getItem('F_DATA')) || {};
+        let bM = parseInt(localStorage.getItem('BM')) || 0;
+        let bO = parseInt(localStorage.getItem('BO')) || 0;
+        let oppN = localStorage.getItem('OPP_N') || "AVVERSARI";
 
-        // --- FIX VOCALE ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'it-IT';
-            recognition.continuous = false; // Importante per mobile
-            recognition.interimResults = false;
+        let rec;
 
-            recognition.onstart = () => {
-                document.getElementById('voice-btn').classList.add('listening');
-            };
-
-            recognition.onresult = (e) => {
-                const text = e.results[0][0].transcript.toLowerCase();
-                recognition.stop(); // Ferma subito dopo aver capito
-                processVoiceCommand(text);
-            };
-
-            recognition.onerror = (e) => {
-                console.error("Errore vocale:", e.error);
-                stopVoiceUI();
-            };
-
-            recognition.onend = () => {
-                stopVoiceUI();
-            };
+        function showStatus(msg) {
+            const s = document.getElementById('voice-status');
+            s.innerText = msg; s.style.display = 'block';
+            setTimeout(() => { s.style.display = 'none'; }, 2500);
         }
 
         function toggleVoice() {
-            if (!recognition) { alert("Microfono non supportato"); return; }
-            try {
-                recognition.start();
-            } catch(e) {
-                recognition.stop();
-            }
-        }
-
-        function stopVoiceUI() {
-            document.getElementById('voice-btn').classList.remove('listening');
-        }
-
-        function processVoiceCommand(text) {
-            const numMatch = text.match(/\d+/);
-            if (!numMatch) {
-                alert("Non ho sentito numeri. Hai detto: " + text);
-                return;
-            }
-            const num = numMatch[0];
-            let type = (text.includes('avversari') || text.includes('rossi') || text.includes('neri') || text.includes('altri')) ? 'opp' : 'my';
-            
-            const list = type === 'my' ? myT : opT;
-            const player = list.find(p => p.n == num && p.on);
-            
-            if (player) {
-                change(player.id, 1, type);
-            } else {
-                alert("Ho capito " + num + " (" + (type==='my'?'Mag':'Opp') + "), ma non è in campo.");
-            }
-        }
-
-        // --- FUNZIONI CORE ---
-        function setLoc(loc) {
-            const isHome = (loc === 'casa');
-            document.getElementById('btn-casa').classList.toggle('active', isHome);
-            document.getElementById('btn-fuori').classList.toggle('active', !isHome);
-            document.body.classList.toggle('rev-layout', !isHome);
-        }
-
-        function openSetup() { 
-            document.getElementById('setup-overlay').style.display = 'flex'; 
-            drawSetupList(); 
-        }
-
-        function closeSetup() { document.getElementById('setup-overlay').style.display = 'none'; render(); }
-
-        function drawSetupList() {
-            const drawType = (target, list, type) => {
-                const el = document.getElementById(target); el.innerHTML = '';
-                list.forEach(p => {
-                    const row = document.createElement('div'); row.className = 'setup-row';
-                    row.innerHTML = `<label class="switch"><input type="checkbox" ${p.on?'checked':''} onchange="updP(${p.id},'on',this.checked,'${type}')"><span class="slider"></span></label>
-                        <input type="text" class="edit-in n-in" value="${p.n}" onchange="updP(${p.id},'n',this.value,'${type}')">
-                        ${type==='my' ? `<input type="text" class="edit-in nm-in" value="${p.nm||''}" onchange="updP(${p.id},'nm',this.value,'my')">` : ''}
-                        <button class="btn-del-setup" onclick="remP(${p.id},'${type}')">X</button>`;
-                    el.appendChild(row);
-                });
+            if (!SpeechRecognition) return alert("No Voice Support");
+            if (rec) rec.stop();
+            rec = new SpeechRecognition();
+            rec.lang = 'it-IT';
+            rec.onstart = () => document.getElementById('voice-btn').classList.add('listening');
+            rec.onresult = (e) => {
+                const text = e.results[0][0].transcript.toLowerCase();
+                showStatus("Ho capito: " + text);
+                parseVoice(text);
             };
-            drawType('setup-list-my', myT, 'my');
-            drawType('setup-list-opp', opT, 'opp');
+            rec.onend = () => document.getElementById('voice-btn').classList.remove('listening');
+            rec.start();
         }
 
-        function addP(type) {
-            const newId = Date.now();
-            if(type === 'my') myT.push({id: newId, n: "0", nm: "NUOVA", on: true});
-            else opT.push({id: newId, n: "0", on: true});
-            saveRosters(); drawSetupList();
-        }
-
-        function remP(id, type) { 
-            if(!confirm("Eliminare?")) return; 
-            if(type === 'my') myT = myT.filter(p => p.id !== id); else opT = opT.filter(p => p.id !== id); 
-            saveRosters(); drawSetupList(); 
-        }
-
-        function updP(id, field, val, type) {
-            const list = type === 'my' ? myT : opT;
-            const p = list.find(x => x.id === id); if(p) p[field] = val;
-            saveRosters();
-        }
-
-        function saveRosters() {
-            localStorage.setItem('M_T_PERMANENT', JSON.stringify(myT));
-            localStorage.setItem('O_T_GIST', JSON.stringify(opT));
-        }
-
-        function updateOppName(val) { 
-            currentOppName = val || "AVVERSARI"; 
-            localStorage.setItem('OPP_NAME_GIST', currentOppName);
+        function parseVoice(t) {
+            const numMap = {"zero":0,"uno":1,"due":2,"tre":3,"quattro":4,"cinque":5,"sei":6,"sette":7,"otto":8,"nove":9,"dieci":10};
+            let n = t.match(/\d+/);
+            if (!n) { for (let k in numMap) { if (t.includes(k)) { n = [numMap[k]]; break; } } }
+            if (!n) return;
+            let target = n[0];
+            let isO = (t.includes('avversari') || t.includes('rossi') || t.includes('loro'));
+            const list = isO ? opT : myT;
+            const p = list.find(x => x.n == target && x.on);
+            if (p) change(p.id, 1, isO ? 'opp' : 'my');
         }
 
         function render() {
-            const drawGrid = (gid, list, type) => {
-                const c = document.getElementById(gid); c.innerHTML = '';
-                const sortedList = [...list].sort((a, b) => parseInt(a.n) - parseInt(b.n));
-                sortedList.forEach(p => {
-                    if(!p.on) return;
-                    if(f[p.id] === undefined) f[p.id] = 0;
-                    const div = document.createElement('div');
-                    div.className = `p-card ${type==='opp'?'opp':''}`; div.id = `pc-${p.id}`;
-                    div.innerHTML = `<div class="p-data" onclick="change(${p.id},1,'${type}')"><div class="p-info"><span class="p-name-label">${p.nm || ''}</span><span class="p-num">${p.n}</span></div><span class="p-fouls" id="f-${p.id}">${f[p.id]}</span></div>
-                        <div class="p-btns"><button class="btn-p btn-plus" onclick="change(${p.id},1,'${type}')">+</button><button class="btn-p btn-min" onclick="change(${p.id},-1,'${type}')">-</button></div>`;
-                    c.appendChild(div); upCard(p.id);
+            const draw = (elId, list, type) => {
+                const container = document.getElementById(elId); container.innerHTML = '';
+                [...list].sort((a,b)=>parseInt(a.n)-parseInt(b.n)).forEach(p => {
+                    if (!p.on) return;
+                    if (f[p.id] === undefined) f[p.id] = 0;
+                    const card = document.createElement('div');
+                    card.className = `p-card ${type==='opp'?'opp':''} ${f[p.id]==4?'warning':''} ${f[p.id]==5?'out':''}`;
+                    card.innerHTML = `
+                        <div class="p-data" onclick="change(${p.id},1,'${type}')">
+                            <div style="text-align:center"><small style="font-size:0.5rem;display:block">${p.nm||''}</small><span class="p-num">${p.n}</span></div>
+                            <span class="p-fouls">${f[p.id]}</span>
+                        </div>
+                        <div class="p-btns">
+                            <button class="btn-p btn-plus" onclick="change(${p.id},1,'${type}')">+</button>
+                            <button class="btn-p btn-min" onclick="change(${p.id},-1,'${type}')">-</button>
+                        </div>`;
+                    container.appendChild(card);
                 });
             };
-            document.getElementById('opp-label').innerText = currentOppName;
-            document.getElementById('label-opp').innerText = currentOppName;
-            drawGrid('grid-my', myT, 'my'); drawGrid('grid-opp', opT, 'opp'); upTop();
+            draw('grid-my', myT, 'my'); draw('grid-opp', opT, 'opp');
+            document.getElementById('tot-my').innerText = bM;
+            document.getElementById('tot-opp').innerText = bO;
+            document.getElementById('opp-label').innerText = oppN;
+            document.getElementById('box-my').classList.toggle('is-bonus', bM>=4);
+            document.getElementById('box-opp').classList.toggle('is-bonus', bO>=4);
         }
 
         function change(id, d, type) {
-            const list = type === 'my' ? myT : opT;
-            const p = list.find(x => x.id === id);
-            if (d < 0 && !confirm(`Togliere fallo a #${p.n}?`)) return;
-
-            let o = f[id] || 0; 
-            let newVal = Math.min(Math.max(o+d,0),5);
-            if(d>0 && o<5){ if(type==='my') bM++; else bO++; }
-            else if(d<0 && o>0){ if(type==='my') bM--; else bO--; }
-            f[id] = newVal;
-            
-            // Vibrazione forzata
-            if(d>0) {
-                if (navigator.vibrate) navigator.vibrate(60);
-                else console.log("Vibrazione non supportata");
-            }
-
-            saveGameState(); upCard(id); upTop();
+            if (d < 0 && !confirm("Togliere fallo?")) return;
+            let current = f[id] || 0;
+            let val = Math.min(Math.max(current + d, 0), 5);
+            if (d > 0 && current < 5) { type === 'my' ? bM++ : bO++; if(navigator.vibrate) navigator.vibrate(50); }
+            else if (d < 0 && current > 0) { type === 'my' ? bM-- : bO--; }
+            f[id] = val; save(); render();
         }
 
-        function saveGameState() {
-            localStorage.setItem('F_DATA_GIST', JSON.stringify(f));
-            localStorage.setItem('BM_GIST', bM); localStorage.setItem('BO_GIST', bO);
+        function save() {
+            localStorage.setItem('F_DATA', JSON.stringify(f));
+            localStorage.setItem('BM', bM); localStorage.setItem('BO', bO);
+            localStorage.setItem('M_ROSTER', JSON.stringify(myT));
+            localStorage.setItem('O_ROSTER', JSON.stringify(opT));
+            localStorage.setItem('OPP_N', oppN);
         }
 
-        function upCard(id) {
-            const val = f[id] || 0; const r = document.getElementById(`pc-${id}`); if(!r) return;
-            document.getElementById(`f-${id}`).innerText = val;
-            r.classList.toggle('warning', val===4); r.classList.toggle('out', val===5);
+        function addP(type) { 
+            const id = Date.now(); 
+            if(type==='my') myT.push({id, n:"0", nm:"NOME", on:true}); 
+            else opT.push({id, n:"0", on:true}); 
+            drawS(); 
         }
 
-        function upTop() {
-            document.getElementById('tot-my').innerText = bM; document.getElementById('tot-opp').innerText = bO;
-            document.getElementById('box-my').classList.toggle('is-bonus', bM>=4); document.getElementById('box-opp').classList.toggle('is-bonus', bO>=4);
+        function drawS() {
+            const s = (el, list, type) => {
+                const container = document.getElementById(el); container.innerHTML = '';
+                list.forEach(p => {
+                    const r = document.createElement('div'); r.className = 'setup-row';
+                    r.innerHTML = `
+                        <input type="checkbox" ${p.on?'checked':''} onchange="p.on=this.checked;save()">
+                        <input type="text" style="width:30px" value="${p.n}" onchange="p.n=this.value;save()">
+                        ${type==='my' ? `<input type="text" style="flex:1" value="${p.nm}" onchange="p.nm=this.value;save()">` : ''}
+                        <button onclick="del(${p.id},'${type}')" style="color:red;background:none;border:none">X</button>`;
+                    container.appendChild(r);
+                });
+            };
+            s('setup-list-my', myT, 'my'); s('setup-list-opp', opT, 'opp');
         }
 
-        function nextQ() { if(confirm("Nuovo Quarto?")) { bM=0; bO=0; saveGameState(); upTop(); } }
-
-        function fullReset() {
-            if(confirm("Nuova partita? I falli saranno azzerati.")) {
-                f = {}; bM = 0; bO = 0; saveGameState(); render(); closeSetup();
-            }
+        function del(id, type) {
+            if (type==='my') myT = myT.filter(x=>x.id!==id); else opT = opT.filter(x=>x.id!==id);
+            drawS(); save();
         }
+
+        function openSetup() { document.getElementById('setup-overlay').style.display='flex'; drawS(); }
+        function closeSetup() { document.getElementById('setup-overlay').style.display='none'; render(); }
+        function nextQ() { if(confirm("Reset Bonus?")) { bM=0; bO=0; save(); render(); } }
+        function fullReset() { if(confirm("Azzera tutto?")) { f={}; bM=0; bO=0; save(); render(); closeSetup(); } }
 
         openSetup();
     </script>
