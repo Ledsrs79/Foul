@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magnolia Scout - Feedback</title>
+    <title>Magnolia Scout - Zero Fix</title>
     <style>
         :root { --bg: #000a1a; --magnolia: #002d5d; --red-mag: #e30613; --text: #ffffff; --warn: #ffcc00; }
         body { font-family: 'Arial Black', sans-serif; background-color: var(--bg); background-image: url('https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png'); background-repeat: no-repeat; background-position: center center; background-attachment: fixed; background-size: 80%; color: var(--text); padding: 5px; margin: 0; }
         body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 10, 26, 0.88); z-index: -1; }
-        
-        /* Notifica Vocale */
-        #voice-status { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 1px solid var(--red-mag); padding: 5px 15px; border-radius: 20px; z-index: 2000; font-size: 0.8rem; display: none; color: var(--warn); }
-
+        #voice-status { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 1px solid var(--red-mag); padding: 5px 15px; border-radius: 20px; z-index: 2000; font-size: 0.8rem; display: none; color: var(--warn); box-shadow: 0 0 10px rgba(255,204,0,0.3); }
         #setup-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
         .setup-card { background: #001530; padding: 15px; border-radius: 15px; border: 2px solid var(--magnolia); margin-bottom: 15px; }
         .setup-title { color: var(--text); margin: 0 0 10px 0; font-size: 0.9rem; text-transform: uppercase; border-left: 4px solid var(--red-mag); padding-left: 10px; }
@@ -25,20 +22,19 @@
         .btn-voice { background: #28a745; }
         .btn-voice.listening { background: var(--red-mag); animation: pulse 0.6s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        
         .court { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .p-card { display: flex; background: rgba(0, 21, 48, 0.7); border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--magnolia); height: 70px; }
+        .p-card { display: flex; background: rgba(0, 21, 48, 0.7); border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--magnolia); height: 70px; transition: 0.3s; }
         .p-data { flex-grow: 1; display: flex; align-items: center; justify-content: space-around; }
         .p-num { font-size: 2rem; font-weight: 900; }
         .p-fouls { font-size: 2.5rem; font-weight: 900; color: var(--red-mag); }
         .warning { border: 2px solid var(--warn); }
         .warning .p-fouls { color: var(--warn); }
-        .out { background: var(--red-mag) !important; opacity: 0.8; }
-        .btn-p { border: none; color: white; width: 40px; font-weight: bold; font-size: 1.2rem; }
-        .btn-plus { background: var(--magnolia); height: 100%; flex: 1; }
-        .btn-min { background: rgba(0,0,0,0.3); height: 100%; flex: 1; font-size: 0.8rem; color: #777; }
+        .out { background: var(--red-mag) !important; opacity: 0.6; }
         .p-btns { display: flex; flex-direction: column; width: 40px; }
-        .setup-row { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+        .btn-p { border: none; color: white; width: 40px; font-weight: bold; font-size: 1.2rem; flex: 1; }
+        .btn-plus { background: var(--magnolia); }
+        .btn-min { background: rgba(0,0,0,0.3); font-size: 0.8rem; color: #777; }
+        .setup-row { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; border-bottom: 1px solid #002d5d; padding-bottom: 5px; }
         input[type="text"] { background: #000; border: 1px solid var(--magnolia); color: #fff; padding: 5px; border-radius: 4px; }
     </style>
 </head>
@@ -53,15 +49,15 @@
         <div class="setup-card">
             <h3 class="setup-title">MAGNOLIA</h3>
             <div id="setup-list-my"></div>
-            <button onclick="addP('my')" style="width:100%; background:none; color:#4CAF50; border:1px dashed #4CAF50; padding:10px; margin-top:5px;">+ AGGIUNGI</button>
+            <button onclick="addP('my')" style="width:100%; background:none; color:#4CAF50; border:1px dashed #4CAF50; padding:10px; margin-top:5px;">+ AGGIUNGI GIOCATRICE</button>
         </div>
         <div class="setup-card">
             <h3 class="setup-title">AVVERSARI</h3>
             <div id="setup-list-opp"></div>
-            <button onclick="addP('opp')" style="width:100%; background:none; color:#4CAF50; border:1px dashed #4CAF50; padding:10px; margin-top:5px;">+ AGGIUNGI</button>
+            <button onclick="addP('opp')" style="width:100%; background:none; color:#4CAF50; border:1px dashed #4CAF50; padding:10px; margin-top:5px;">+ AGGIUNGI NUMERO</button>
         </div>
-        <button onclick="closeSetup()" style="background:var(--red-mag); color:white; padding:15px; border:none; border-radius:10px; font-weight:bold;">VAI AL CAMPO</button>
-        <button onclick="fullReset()" style="background:#444; color:red; border:none; padding:10px; margin-top:20px; border-radius:10px;">RESET FALLI</button>
+        <button onclick="closeSetup()" style="background:var(--red-mag); color:white; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">VAI AL CAMPO</button>
+        <button onclick="fullReset()" style="background:#444; color:red; border:none; padding:10px; margin-top:20px; border-radius:10px; cursor:pointer;">NUOVA PARTITA (RESET)</button>
     </div>
 
     <div class="dashboard">
@@ -80,8 +76,8 @@
     </div>
 
     <script>
-        let myT = JSON.parse(localStorage.getItem('M_ROSTER')) || [{id:1, n:"4", nm:"PLAY", on:true}];
-        let opT = JSON.parse(localStorage.getItem('O_ROSTER')) || [{id:101, n:"4", on:true}];
+        let myT = JSON.parse(localStorage.getItem('M_ROSTER')) || [{id:1, n:"0", nm:"ZERO", on:true}];
+        let opT = JSON.parse(localStorage.getItem('O_ROSTER')) || [{id:101, n:"0", on:true}];
         let f = JSON.parse(localStorage.getItem('F_DATA')) || {};
         let bM = parseInt(localStorage.getItem('BM')) || 0;
         let bO = parseInt(localStorage.getItem('BO')) || 0;
@@ -97,7 +93,7 @@
         }
 
         function toggleVoice() {
-            if (!SpeechRecognition) return alert("No Voice Support");
+            if (!SpeechRecognition) return alert("Voce non supportata su questo browser");
             if (rec) rec.stop();
             rec = new SpeechRecognition();
             rec.lang = 'it-IT';
@@ -112,15 +108,34 @@
         }
 
         function parseVoice(t) {
-            const numMap = {"zero":0,"uno":1,"due":2,"tre":3,"quattro":4,"cinque":5,"sei":6,"sette":7,"otto":8,"nove":9,"dieci":10};
-            let n = t.match(/\d+/);
-            if (!n) { for (let k in numMap) { if (t.includes(k)) { n = [numMap[k]]; break; } } }
-            if (!n) return;
-            let target = n[0];
-            let isO = (t.includes('avversari') || t.includes('rossi') || t.includes('loro'));
-            const list = isO ? opT : myT;
-            const p = list.find(x => x.n == target && x.on);
-            if (p) change(p.id, 1, isO ? 'opp' : 'my');
+            const numMap = {
+                "zero":0, "00":0, "uno":1, "due":2, "tre":3, "quattro":4, "cinque":5, "sei":6, "sette":7, "otto":8, "nove":9, "dieci":10,
+                "undici":11, "dodici":12, "tredici":13, "quattordici":14, "quindici":15, "sedici":16, "diciassette":17, "diciotto":18, "diciannove":19, "venti":20,
+                "ventuno":21, "ventidue":22, "ventitré":23, "ventiquattro":24, "venticinque":25, "trenta":30, "quaranta":40, "cinquanta":50
+            };
+            
+            let targetNum = null;
+            let nMatch = t.match(/\d+/);
+            
+            if (nMatch) {
+                targetNum = nMatch[0];
+            } else {
+                for (let parola in numMap) {
+                    if (t.includes(parola)) { targetNum = numMap[parola].toString(); break; }
+                }
+            }
+
+            // FIX FONDAMENTALE: Accetta lo "0" come numero valido (non saltarlo se è 0)
+            if (targetNum !== null) {
+                let isO = (t.includes('avversari') || t.includes('rossi') || t.includes('loro') || t.includes('altri'));
+                const list = isO ? opT : myT;
+                const p = list.find(x => x.n == targetNum && x.on);
+                if (p) {
+                    change(p.id, 1, isO ? 'opp' : 'my');
+                } else {
+                    showStatus("N. " + targetNum + " non trovato in campo");
+                }
+            }
         }
 
         function render() {
@@ -133,7 +148,7 @@
                     card.className = `p-card ${type==='opp'?'opp':''} ${f[p.id]==4?'warning':''} ${f[p.id]==5?'out':''}`;
                     card.innerHTML = `
                         <div class="p-data" onclick="change(${p.id},1,'${type}')">
-                            <div style="text-align:center"><small style="font-size:0.5rem;display:block">${p.nm||''}</small><span class="p-num">${p.n}</span></div>
+                            <div style="text-align:center"><small style="font-size:0.5rem;display:block;color:#aaa">${p.nm||''}</small><span class="p-num">${p.n}</span></div>
                             <span class="p-fouls">${f[p.id]}</span>
                         </div>
                         <div class="p-btns">
@@ -152,8 +167,12 @@
         }
 
         function change(id, d, type) {
-            if (d < 0 && !confirm("Togliere fallo?")) return;
             let current = f[id] || 0;
+            if (d < 0) {
+                const list = type === 'my' ? myT : opT;
+                const p = list.find(x => x.id === id);
+                if (!confirm("Togliere fallo a #" + p.n + "?")) return;
+            }
             let val = Math.min(Math.max(current + d, 0), 5);
             if (d > 0 && current < 5) { type === 'my' ? bM++ : bO++; if(navigator.vibrate) navigator.vibrate(50); }
             else if (d < 0 && current > 0) { type === 'my' ? bM-- : bO--; }
@@ -168,13 +187,6 @@
             localStorage.setItem('OPP_N', oppN);
         }
 
-        function addP(type) { 
-            const id = Date.now(); 
-            if(type==='my') myT.push({id, n:"0", nm:"NOME", on:true}); 
-            else opT.push({id, n:"0", on:true}); 
-            drawS(); 
-        }
-
         function drawS() {
             const s = (el, list, type) => {
                 const container = document.getElementById(el); container.innerHTML = '';
@@ -182,24 +194,32 @@
                     const r = document.createElement('div'); r.className = 'setup-row';
                     r.innerHTML = `
                         <input type="checkbox" ${p.on?'checked':''} onchange="p.on=this.checked;save()">
-                        <input type="text" style="width:30px" value="${p.n}" onchange="p.n=this.value;save()">
+                        <input type="text" style="width:35px; text-align:center" value="${p.n}" onchange="p.n=this.value;save()">
                         ${type==='my' ? `<input type="text" style="flex:1" value="${p.nm}" onchange="p.nm=this.value;save()">` : ''}
-                        <button onclick="del(${p.id},'${type}')" style="color:red;background:none;border:none">X</button>`;
+                        <button onclick="del(${p.id},'${type}')" style="color:red;background:none;border:none;font-weight:bold;padding:10px">X</button>`;
                     container.appendChild(r);
                 });
             };
             s('setup-list-my', myT, 'my'); s('setup-list-opp', opT, 'opp');
         }
 
+        function addP(type) { 
+            const id = Date.now(); 
+            if(type==='my') myT.push({id, n:"0", nm:"NOME", on:true}); 
+            else opT.push({id, n:"0", on:true}); 
+            drawS(); save();
+        }
+
         function del(id, type) {
+            if (!confirm("Eliminare definitivamente?")) return;
             if (type==='my') myT = myT.filter(x=>x.id!==id); else opT = opT.filter(x=>x.id!==id);
             drawS(); save();
         }
 
         function openSetup() { document.getElementById('setup-overlay').style.display='flex'; drawS(); }
         function closeSetup() { document.getElementById('setup-overlay').style.display='none'; render(); }
-        function nextQ() { if(confirm("Reset Bonus?")) { bM=0; bO=0; save(); render(); } }
-        function fullReset() { if(confirm("Azzera tutto?")) { f={}; bM=0; bO=0; save(); render(); closeSetup(); } }
+        function nextQ() { if(confirm("Passare al prossimo Quarto? I bonus verranno azzerati.")) { bM=0; bO=0; save(); render(); } }
+        function fullReset() { if(confirm("Vuoi iniziare una nuova partita? I falli verranno azzerati, ma il roster Magnolia rimarrà salvato.")) { f={}; bM=0; bO=0; save(); render(); closeSetup(); } }
 
         openSetup();
     </script>
