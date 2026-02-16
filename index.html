@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="logoweb_2023.png?v=2">
-    <link rel="apple-touch-icon" href="logoweb_2023.png?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magnolia Scout</title>
+    <title>Magnolia Scout - Pro Edition</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="icon" type="image/png" sizes="192x192" href="https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png">
@@ -14,8 +11,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png">
-
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Magnolia Scout","short_name":"Magnolia","icons":[{"src":"https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png","sizes":"192x192","type":"image/png","purpose":"any maskable"}],"start_url":".","display":"standalone","background_color":"#000a1a","theme_color":"#002d5d"}'>
 
     <style>
         :root { --bg: #000a1a; --magnolia: #002d5d; --magnolia-light: #004b99; --red-mag: #e30613; --text: #ffffff; --warn: #ffcc00; }
@@ -28,14 +23,18 @@
         .loc-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
         .loc-btn { flex: 1; padding: 10px; background: #001f44; border: 1px solid var(--magnolia); color: #888; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
         .loc-btn.active { border-color: var(--red-mag); color: white; background: var(--magnolia); }
-        .btn-start { background: var(--red-mag); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; width: 100%; margin-bottom: 30px; }
+        .btn-start { background: var(--red-mag); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; width: 100%; margin-bottom: 15px; }
+        .btn-reset-total { background: #444; color: #ff4444; border: 1px solid #ff4444; padding: 10px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; width: 100%; margin-bottom: 30px; cursor: pointer; }
         .dashboard { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-bottom: 15px; position: relative; z-index: 1; }
         .bonus-box { background: rgba(0, 21, 48, 0.8); border-radius: 8px; text-align: center; padding: 8px; border: 2px solid var(--magnolia); flex: 1; height: 65px; display: flex; flex-direction: column; justify-content: center; }
         .bonus-box b { font-size: 2.2rem; display: block; line-height: 1; color: var(--text); }
         .bonus-box span { font-size: 0.55rem; text-transform: uppercase; color: #aaa; display: block; }
         .is-bonus { background: var(--red-mag) !important; border-color: white; }
         .actions { display: flex; gap: 5px; flex-shrink: 0; }
-        .btn-ctrl { background: var(--magnolia); border: 1px solid var(--magnolia-light); color: white; border-radius: 8px; font-size: 1.2rem; width: 50px; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .btn-ctrl { background: var(--magnolia); border: 1px solid var(--magnolia-light); color: white; border-radius: 8px; font-size: 1.2rem; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .btn-voice { background: #28a745; border-color: #1e7e34; }
+        .btn-voice.listening { background: var(--red-mag); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .court { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; position: relative; z-index: 1; }
         .col-label { text-align: center; font-size: 0.7rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
         .p-card { display: flex; background: rgba(0, 21, 48, 0.7); backdrop-filter: blur(1px); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--magnolia); height: 75px; position: relative; }
@@ -54,11 +53,6 @@
         .warning { border: 2px solid var(--warn); }
         .out { background: var(--red-mag) !important; }
         .out .p-fouls { color: white; }
-        .rev-layout .dash-my { order: 3; }
-        .rev-layout .dash-opp { order: 1; }
-        .rev-layout .actions { order: 2; }
-        .rev-layout .court-my { order: 2; }
-        .rev-layout .court-opp { order: 1; }
         .switch { position: relative; width: 34px; height: 20px; margin-right: 10px; display: inline-block; vertical-align: middle; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 20px; }
@@ -70,7 +64,6 @@
         .n-in { width: 35px; text-align: center; font-weight: bold; color: var(--text); }
         .nm-in { flex: 1; }
         .btn-add-setup { background: #001530; color: #4CAF50; border: 1px dashed #4CAF50; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; }
-        .btn-del-setup { background: var(--red-mag); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -85,7 +78,7 @@
             </div>
         </div>
         <div class="setup-card">
-            <h3 class="setup-title">ROSTER MAGNOLIA</h3>
+            <h3 class="setup-title">ROSTER MAGNOLIA (SALVATO)</h3>
             <div id="setup-list-my"></div>
             <button class="btn-add-setup" onclick="addP('my')">+ AGGIUNGI TESSERATA</button>
         </div>
@@ -94,13 +87,16 @@
             <div id="setup-list-opp"></div>
             <button class="btn-add-setup" onclick="addP('opp')">+ AGGIUNGI NUMERO</button>
         </div>
-        <button class="btn-start" onclick="closeSetup()">INIZIA PARTITA</button>
+        
+        <button class="btn-start" onclick="closeSetup()">TORNA AL CAMPO</button>
+        <button class="btn-reset-total" onclick="fullReset()">⚠️ NUOVA PARTITA (RESET FALLI)</button>
     </div>
 
     <div class="dashboard">
         <div class="bonus-box dash-my" id="box-my"><span>MAGNOLIA</span><b id="tot-my">0</b></div>
         <div class="actions">
             <button class="btn-ctrl" onclick="nextQ()">⏱️</button>
+            <button id="voice-btn" class="btn-ctrl btn-voice" onclick="toggleVoice()">🎤</button>
             <button class="btn-ctrl" onclick="openSetup()">⚙️</button>
         </div>
         <div class="bonus-box dash-opp" id="box-opp"><span id="opp-label">AVVERSARI</span><b id="tot-opp">0</b></div>
@@ -112,9 +108,40 @@
     </div>
 
     <script>
-        let myT = JSON.parse(localStorage.getItem('M_T_GIST')) || [{id:1, n:"4", nm:"PLAYER 1", on:true}];
+        let myT = JSON.parse(localStorage.getItem('M_T_PERMANENT')) || [{id:1, n:"4", nm:"PLAYER 1", on:true}];
         let opT = JSON.parse(localStorage.getItem('O_T_GIST')) || [{id:101, n:"4", on:true}];
-        let f = {}; let bM = 0, bO = 0; let currentOppName = "AVVERSARI";
+        let f = JSON.parse(localStorage.getItem('F_DATA_GIST')) || {}; 
+        let bM = parseInt(localStorage.getItem('BM_GIST')) || 0; 
+        let bO = parseInt(localStorage.getItem('BO_GIST')) || 0;
+        let currentOppName = localStorage.getItem('OPP_NAME_GIST') || "AVVERSARI";
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'it-IT';
+            recognition.onresult = (e) => { processVoiceCommand(e.results[0][0].transcript.toLowerCase()); stopVoiceUI(); };
+            recognition.onerror = stopVoiceUI;
+            recognition.onend = stopVoiceUI;
+        }
+
+        function toggleVoice() {
+            if (!recognition) { alert("Microfono non supportato"); return; }
+            document.getElementById('voice-btn').classList.add('listening');
+            recognition.start();
+        }
+
+        function stopVoiceUI() { document.getElementById('voice-btn').classList.remove('listening'); }
+
+        function processVoiceCommand(text) {
+            const numMatch = text.match(/\d+/);
+            if (!numMatch) return;
+            const num = numMatch[0];
+            let type = (text.includes('avversari') || text.includes('rossi') || text.includes('altri')) ? 'opp' : 'my';
+            const list = type === 'my' ? myT : opT;
+            const player = list.find(p => p.n == num && p.on);
+            if (player) change(player.id, 1, type);
+        }
 
         function setLoc(loc) {
             const isHome = (loc === 'casa');
@@ -122,14 +149,20 @@
             document.getElementById('btn-fuori').classList.toggle('active', !isHome);
             document.body.classList.toggle('rev-layout', !isHome);
         }
-        function openSetup() { document.getElementById('setup-overlay').style.display = 'flex'; drawSetupList(); }
+
+        function openSetup() { 
+            document.getElementById('setup-overlay').style.display = 'flex'; 
+            document.getElementById('opp-name-input').value = currentOppName === "AVVERSARI" ? "" : currentOppName;
+            drawSetupList(); 
+        }
+
         function closeSetup() { document.getElementById('setup-overlay').style.display = 'none'; render(); }
+
         function drawSetupList() {
             const drawType = (target, list, type) => {
                 const el = document.getElementById(target); el.innerHTML = '';
                 list.forEach(p => {
-                    const row = document.createElement('div');
-                    row.className = 'setup-row';
+                    const row = document.createElement('div'); row.className = 'setup-row';
                     row.innerHTML = `<label class="switch"><input type="checkbox" ${p.on?'checked':''} onchange="updP(${p.id},'on',this.checked,'${type}')"><span class="slider"></span></label>
                         <input type="text" class="edit-in n-in" value="${p.n}" onchange="updP(${p.id},'n',this.value,'${type}')">
                         ${type==='my' ? `<input type="text" class="edit-in nm-in" value="${p.nm||''}" placeholder="Nome" onchange="updP(${p.id},'nm',this.value,'my')">` : ''}
@@ -140,24 +173,47 @@
             drawType('setup-list-my', myT, 'my');
             drawType('setup-list-opp', opT, 'opp');
         }
+
         function addP(type) {
             const newId = Date.now();
             if(type === 'my') myT.push({id: newId, n: "0", nm: "NUOVA", on: true});
             else opT.push({id: newId, n: "0", on: true});
-            drawSetupList();
+            saveRosters(); drawSetupList();
         }
-        function remP(id, type) { if(!confirm("Eliminare?")) return; if(type === 'my') myT = myT.filter(p => p.id !== id); else opT = opT.filter(p => p.id !== id); drawSetupList(); }
+
+        function remP(id, type) { 
+            if(!confirm("Eliminare definitivamente?")) return; 
+            if(type === 'my') myT = myT.filter(p => p.id !== id); else opT = opT.filter(p => p.id !== id); 
+            saveRosters(); drawSetupList(); 
+        }
+
         function updP(id, field, val, type) {
             const list = type === 'my' ? myT : opT;
             const p = list.find(x => x.id === id); if(p) p[field] = val;
-            localStorage.setItem('M_T_GIST', JSON.stringify(myT));
+            saveRosters();
+        }
+
+        function saveRosters() {
+            localStorage.setItem('M_T_PERMANENT', JSON.stringify(myT));
             localStorage.setItem('O_T_GIST', JSON.stringify(opT));
         }
-        function updateOppName(val) { currentOppName = val || "AVVERSARI"; document.getElementById('opp-label').innerText = currentOppName; document.getElementById('label-opp').innerText = currentOppName; }
+
+        function updateOppName(val) { 
+            currentOppName = val || "AVVERSARI"; 
+            document.getElementById('opp-label').innerText = currentOppName; 
+            document.getElementById('label-opp').innerText = currentOppName; 
+            localStorage.setItem('OPP_NAME_GIST', currentOppName);
+        }
+
+        // --- FUNZIONE RENDER CON ORDINAMENTO NUMERICO ---
         function render() {
             const drawGrid = (gid, list, type) => {
                 const c = document.getElementById(gid); c.innerHTML = '';
-                list.forEach(p => {
+                
+                // Creiamo una copia della lista e la ordiniamo per numero
+                const sortedList = [...list].sort((a, b) => parseInt(a.n) - parseInt(b.n));
+
+                sortedList.forEach(p => {
                     if(!p.on) return;
                     if(f[p.id] === undefined) f[p.id] = 0;
                     const div = document.createElement('div');
@@ -167,29 +223,52 @@
                     c.appendChild(div); upCard(p.id);
                 });
             };
+            document.getElementById('opp-label').innerText = currentOppName;
+            document.getElementById('label-opp').innerText = currentOppName;
             drawGrid('grid-my', myT, 'my'); drawGrid('grid-opp', opT, 'opp'); upTop();
         }
+
         function change(id, d, type) {
-            let o = f[id] || 0; f[id] = Math.min(Math.max(o+d,0),5);
+            const list = type === 'my' ? myT : opT;
+            const p = list.find(x => x.id === id);
+            const pName = p ? (p.nm || p.n) : "Giocatore";
+            if (d < 0) { if (!confirm(`Togliere un fallo al giocatore ${pName} (#${p ? p.n : '?'})?`)) return; }
+            let o = f[id] || 0; 
+            let newVal = Math.min(Math.max(o+d,0),5);
             if(d>0 && o<5){ if(type==='my') bM++; else bO++; }
             else if(d<0 && o>0){ if(type==='my') bM--; else bO--; }
+            f[id] = newVal;
             if(d>0 && window.navigator.vibrate) window.navigator.vibrate(40);
-            upCard(id); upTop();
+            saveGameState(); upCard(id); upTop();
         }
+
+        function saveGameState() {
+            localStorage.setItem('F_DATA_GIST', JSON.stringify(f));
+            localStorage.setItem('BM_GIST', bM); localStorage.setItem('BO_GIST', bO);
+        }
+
         function upCard(id) {
             const val = f[id] || 0; const r = document.getElementById(`pc-${id}`); if(!r) return;
             document.getElementById(`f-${id}`).innerText = val;
             r.classList.toggle('warning', val===4); r.classList.toggle('out', val===5);
         }
+
         function upTop() {
             document.getElementById('tot-my').innerText = bM; document.getElementById('tot-opp').innerText = bO;
             document.getElementById('box-my').classList.toggle('is-bonus', bM>=4); document.getElementById('box-opp').classList.toggle('is-bonus', bO>=4);
         }
-        function nextQ() { if(confirm("Nuovo Quarto?")) { bM=0; bO=0; upTop(); } }
+
+        function nextQ() { 
+            if(confirm("Nuovo Quarto (Reset Bonus)?")) { bM=0; bO=0; saveGameState(); upTop(); } 
+        }
+
+        function fullReset() {
+            if(confirm("Vuoi iniziare una nuova partita? I falli saranno azzerati, ma il roster Magnolia rimarrà salvato.")) {
+                f = {}; bM = 0; bO = 0; saveGameState(); render(); closeSetup();
+            }
+        }
+
         openSetup();
     </script>
 </body>
-
 </html>
-
-
