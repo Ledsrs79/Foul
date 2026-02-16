@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magnolia Scout - Pro Edition</title>
+    <title>Magnolia Scout - Voice Fix</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="icon" type="image/png" sizes="192x192" href="https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://www.magnoliabasket.it/wp-content/uploads/2019/08/magnoliaicon.png">
 
     <style>
         :root { --bg: #000a1a; --magnolia: #002d5d; --magnolia-light: #004b99; --red-mag: #e30613; --text: #ffffff; --warn: #ffcc00; }
@@ -32,12 +29,11 @@
         .is-bonus { background: var(--red-mag) !important; border-color: white; }
         .actions { display: flex; gap: 5px; flex-shrink: 0; }
         .btn-ctrl { background: var(--magnolia); border: 1px solid var(--magnolia-light); color: white; border-radius: 8px; font-size: 1.2rem; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
-        .btn-voice { background: #28a745; border-color: #1e7e34; }
-        .btn-voice.listening { background: var(--red-mag); animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .btn-voice { background: #28a745; border-color: #1e7e34; transition: all 0.3s; }
+        .btn-voice.listening { background: var(--red-mag); box-shadow: 0 0 15px var(--red-mag); transform: scale(1.1); }
         .court { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; position: relative; z-index: 1; }
         .col-label { text-align: center; font-size: 0.7rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
-        .p-card { display: flex; background: rgba(0, 21, 48, 0.7); backdrop-filter: blur(1px); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--magnolia); height: 75px; position: relative; }
+        .p-card { display: flex; background: rgba(0, 21, 48, 0.7); backdrop-filter: blur(1px); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--magnolia); height: 75px; }
         .p-data { flex-grow: 1; display: flex; align-items: center; justify-content: space-around; padding: 0 5px; }
         .p-info { display: flex; flex-direction: column; align-items: center; }
         .p-name-label { font-size: 0.5rem; color: #ccc; text-transform: uppercase; margin-bottom: -4px; }
@@ -73,12 +69,12 @@
             <input type="text" id="opp-name-input" class="setup-input" placeholder="Nome squadra..." oninput="updateOppName(this.value)">
             <h3 class="setup-title">LOCATION</h3>
             <div class="loc-toggle">
-                <button id="btn-casa" class="loc-btn active" onclick="setLoc('casa')">CASA (MAG SX)</button>
-                <button id="btn-fuori" class="loc-btn" onclick="setLoc('fuori')">FUORI (MAG DX)</button>
+                <button id="btn-casa" class="loc-btn active" onclick="setLoc('casa')">CASA</button>
+                <button id="btn-fuori" class="loc-btn" onclick="setLoc('fuori')">FUORI</button>
             </div>
         </div>
         <div class="setup-card">
-            <h3 class="setup-title">ROSTER MAGNOLIA (SALVATO)</h3>
+            <h3 class="setup-title">ROSTER MAGNOLIA</h3>
             <div id="setup-list-my"></div>
             <button class="btn-add-setup" onclick="addP('my')">+ AGGIUNGI TESSERATA</button>
         </div>
@@ -87,7 +83,6 @@
             <div id="setup-list-opp"></div>
             <button class="btn-add-setup" onclick="addP('opp')">+ AGGIUNGI NUMERO</button>
         </div>
-        
         <button class="btn-start" onclick="closeSetup()">TORNA AL CAMPO</button>
         <button class="btn-reset-total" onclick="fullReset()">⚠️ NUOVA PARTITA (RESET FALLI)</button>
     </div>
@@ -115,34 +110,68 @@
         let bO = parseInt(localStorage.getItem('BO_GIST')) || 0;
         let currentOppName = localStorage.getItem('OPP_NAME_GIST') || "AVVERSARI";
 
+        // --- FIX VOCALE ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.lang = 'it-IT';
-            recognition.onresult = (e) => { processVoiceCommand(e.results[0][0].transcript.toLowerCase()); stopVoiceUI(); };
-            recognition.onerror = stopVoiceUI;
-            recognition.onend = stopVoiceUI;
+            recognition.continuous = false; // Importante per mobile
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                document.getElementById('voice-btn').classList.add('listening');
+            };
+
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript.toLowerCase();
+                recognition.stop(); // Ferma subito dopo aver capito
+                processVoiceCommand(text);
+            };
+
+            recognition.onerror = (e) => {
+                console.error("Errore vocale:", e.error);
+                stopVoiceUI();
+            };
+
+            recognition.onend = () => {
+                stopVoiceUI();
+            };
         }
 
         function toggleVoice() {
             if (!recognition) { alert("Microfono non supportato"); return; }
-            document.getElementById('voice-btn').classList.add('listening');
-            recognition.start();
+            try {
+                recognition.start();
+            } catch(e) {
+                recognition.stop();
+            }
         }
 
-        function stopVoiceUI() { document.getElementById('voice-btn').classList.remove('listening'); }
+        function stopVoiceUI() {
+            document.getElementById('voice-btn').classList.remove('listening');
+        }
 
         function processVoiceCommand(text) {
             const numMatch = text.match(/\d+/);
-            if (!numMatch) return;
+            if (!numMatch) {
+                alert("Non ho sentito numeri. Hai detto: " + text);
+                return;
+            }
             const num = numMatch[0];
-            let type = (text.includes('avversari') || text.includes('rossi') || text.includes('altri')) ? 'opp' : 'my';
+            let type = (text.includes('avversari') || text.includes('rossi') || text.includes('neri') || text.includes('altri')) ? 'opp' : 'my';
+            
             const list = type === 'my' ? myT : opT;
             const player = list.find(p => p.n == num && p.on);
-            if (player) change(player.id, 1, type);
+            
+            if (player) {
+                change(player.id, 1, type);
+            } else {
+                alert("Ho capito " + num + " (" + (type==='my'?'Mag':'Opp') + "), ma non è in campo.");
+            }
         }
 
+        // --- FUNZIONI CORE ---
         function setLoc(loc) {
             const isHome = (loc === 'casa');
             document.getElementById('btn-casa').classList.toggle('active', isHome);
@@ -152,7 +181,6 @@
 
         function openSetup() { 
             document.getElementById('setup-overlay').style.display = 'flex'; 
-            document.getElementById('opp-name-input').value = currentOppName === "AVVERSARI" ? "" : currentOppName;
             drawSetupList(); 
         }
 
@@ -165,7 +193,7 @@
                     const row = document.createElement('div'); row.className = 'setup-row';
                     row.innerHTML = `<label class="switch"><input type="checkbox" ${p.on?'checked':''} onchange="updP(${p.id},'on',this.checked,'${type}')"><span class="slider"></span></label>
                         <input type="text" class="edit-in n-in" value="${p.n}" onchange="updP(${p.id},'n',this.value,'${type}')">
-                        ${type==='my' ? `<input type="text" class="edit-in nm-in" value="${p.nm||''}" placeholder="Nome" onchange="updP(${p.id},'nm',this.value,'my')">` : ''}
+                        ${type==='my' ? `<input type="text" class="edit-in nm-in" value="${p.nm||''}" onchange="updP(${p.id},'nm',this.value,'my')">` : ''}
                         <button class="btn-del-setup" onclick="remP(${p.id},'${type}')">X</button>`;
                     el.appendChild(row);
                 });
@@ -182,7 +210,7 @@
         }
 
         function remP(id, type) { 
-            if(!confirm("Eliminare definitivamente?")) return; 
+            if(!confirm("Eliminare?")) return; 
             if(type === 'my') myT = myT.filter(p => p.id !== id); else opT = opT.filter(p => p.id !== id); 
             saveRosters(); drawSetupList(); 
         }
@@ -200,19 +228,13 @@
 
         function updateOppName(val) { 
             currentOppName = val || "AVVERSARI"; 
-            document.getElementById('opp-label').innerText = currentOppName; 
-            document.getElementById('label-opp').innerText = currentOppName; 
             localStorage.setItem('OPP_NAME_GIST', currentOppName);
         }
 
-        // --- FUNZIONE RENDER CON ORDINAMENTO NUMERICO ---
         function render() {
             const drawGrid = (gid, list, type) => {
                 const c = document.getElementById(gid); c.innerHTML = '';
-                
-                // Creiamo una copia della lista e la ordiniamo per numero
                 const sortedList = [...list].sort((a, b) => parseInt(a.n) - parseInt(b.n));
-
                 sortedList.forEach(p => {
                     if(!p.on) return;
                     if(f[p.id] === undefined) f[p.id] = 0;
@@ -231,14 +253,20 @@
         function change(id, d, type) {
             const list = type === 'my' ? myT : opT;
             const p = list.find(x => x.id === id);
-            const pName = p ? (p.nm || p.n) : "Giocatore";
-            if (d < 0) { if (!confirm(`Togliere un fallo al giocatore ${pName} (#${p ? p.n : '?'})?`)) return; }
+            if (d < 0 && !confirm(`Togliere fallo a #${p.n}?`)) return;
+
             let o = f[id] || 0; 
             let newVal = Math.min(Math.max(o+d,0),5);
             if(d>0 && o<5){ if(type==='my') bM++; else bO++; }
             else if(d<0 && o>0){ if(type==='my') bM--; else bO--; }
             f[id] = newVal;
-            if(d>0 && window.navigator.vibrate) window.navigator.vibrate(40);
+            
+            // Vibrazione forzata
+            if(d>0) {
+                if (navigator.vibrate) navigator.vibrate(60);
+                else console.log("Vibrazione non supportata");
+            }
+
             saveGameState(); upCard(id); upTop();
         }
 
@@ -258,12 +286,10 @@
             document.getElementById('box-my').classList.toggle('is-bonus', bM>=4); document.getElementById('box-opp').classList.toggle('is-bonus', bO>=4);
         }
 
-        function nextQ() { 
-            if(confirm("Nuovo Quarto (Reset Bonus)?")) { bM=0; bO=0; saveGameState(); upTop(); } 
-        }
+        function nextQ() { if(confirm("Nuovo Quarto?")) { bM=0; bO=0; saveGameState(); upTop(); } }
 
         function fullReset() {
-            if(confirm("Vuoi iniziare una nuova partita? I falli saranno azzerati, ma il roster Magnolia rimarrà salvato.")) {
+            if(confirm("Nuova partita? I falli saranno azzerati.")) {
                 f = {}; bM = 0; bO = 0; saveGameState(); render(); closeSetup();
             }
         }
